@@ -1,7 +1,37 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
 [project]
 name = "webnovel-paraphrasing"
 version = "0.1.0"
-description = "Add your description here"
+description = "Local-first webnovel paraphrasing pipeline"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+  "typer>=0.16.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.0",
+  "ruff>=0.8.0",
+  "tox>=4.21.0",
+]
+
+[project.scripts]
+webnovel-paraphrasing = "webnovel_paraphraser.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/webnovel_paraphraser"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
