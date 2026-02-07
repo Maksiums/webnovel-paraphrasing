@@ -1,7 +1,7 @@
 # Webnovel Paraphrasing Project — Context & Roadmap
 
-Version: 0.2.0  
-Last Updated: 2026-02-07  
+Version: 0.2.0
+Last Updated: 2026-02-07
 Scope: Public project context (versioned)
 
 ## 1. Project Overview
@@ -11,13 +11,13 @@ This project aims to paraphrase full-length webnovels from EPUB input into clean
 
 ### High-Level Pipeline
 
-→ Input EPUB  
-→ Inspect EPUB structure  
-→ Split large XHTML files into one chapter per file  
-→ Detect volumes (optional)  
-→ Maintain persistent story state (story bible, summaries, glossary)  
-→ Paraphrase chapters (chunked, resumable, local LLM)  
-→ Optional consistency / validation pass  
+→ Input EPUB
+→ Inspect EPUB structure
+→ Split large XHTML files into one chapter per file
+→ Detect volumes (optional)
+→ Maintain persistent story state (story bible, summaries, glossary)
+→ Paraphrase chapters (chunked, resumable, local LLM)
+→ Optional consistency / validation pass
 → Rebuild EPUB (single file or per-volume)
 
 ## 2. Core Constraints & Design Decisions
