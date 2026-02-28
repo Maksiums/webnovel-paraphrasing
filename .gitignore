@@ -9,5 +9,21 @@ wheels/
 # Virtual environments
 .venv
 
+# Tool caches
+.pre-commit-cache/
+.pytest_cache/
+.ruff_cache/
+.tox/
+.vscode
+
+# Local run artifacts
+data/*
+runs/*
+!data/.gitkeep
+!runs/.gitkeep
+
 # Misc
 .DS_Store
+
+# Local private docs
+docs/PRIVATE_NOTES.md
