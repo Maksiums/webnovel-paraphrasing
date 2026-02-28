@@ -21,6 +21,14 @@ data/*
 runs/*
 !data/.gitkeep
 !runs/.gitkeep
+input/*
+output/*
+!input/.gitkeep
+!input/txt_chapters/
+!input/txt_chapters/.gitkeep
+!input/assets/
+!input/assets/.gitkeep
+!output/.gitkeep
 
 # Misc
 .DS_Store
