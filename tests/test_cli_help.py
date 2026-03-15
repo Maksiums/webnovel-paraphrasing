@@ -13,3 +13,6 @@ def test_help_lists_expected_subcommands() -> None:
     assert "split-epub" in result.stdout
     assert "paraphrase-chapter" in result.stdout
     assert "build-epub" in result.stdout
+    assert "inspect-txt" in result.stdout
+    assert "ingest-txt" in result.stdout
+    assert "cleanup-runs" in result.stdout

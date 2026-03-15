@@ -6,10 +6,12 @@ Project skeleton for a local-first webnovel paraphrasing pipeline.
 
 ```bash
 uv sync --group dev
-PYTHONPATH=src uv run python -m webnovel_paraphraser --help
+make cli
 ```
 
-## Make aliases
+## Preferred Workflow (`make`)
+
+Use `make` targets as the default interface for day-to-day commands.
 
 ```bash
 make help
@@ -19,6 +21,10 @@ make test
 make tox
 make check
 make cli
+make inspect-txt
+make ingest-txt
+make cleanup-runs          # dry-run preview
+make cleanup-runs-apply    # actually delete old runs
 make precommit-install
 make precommit-run
 ```

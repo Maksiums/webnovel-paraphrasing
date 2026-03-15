@@ -1,44 +1,51 @@
 # Webnovel Paraphrasing Project — Context & Roadmap
 
-Version: 0.2.0
-Last Updated: 2026-02-07
+Version: 0.3.0
+Last Updated: 2026-02-28
 Scope: Public project context (versioned)
 
 ## 1. Project Overview
 
 ### Goal
-This project aims to paraphrase full-length webnovels from EPUB input into cleaner, more readable EPUB output while preserving meaning, continuity, and story coherence.
+This project aims to paraphrase full-length webnovels into cleaner, more readable EPUB output while preserving meaning, continuity, and story coherence.
 
-### High-Level Pipeline
+### Current Execution Strategy
+Build a small end-to-end MVP first using a manually prepared dataset (6 chapter `.txt` files), then expand ingest support for larger EPUB workflows.
 
-→ Input EPUB
-→ Inspect EPUB structure
-→ Split large XHTML files into one chapter per file
-→ Detect volumes (optional)
-→ Maintain persistent story state (story bible, summaries, glossary)
+### High-Level Pipeline (Input-Agnostic Core)
+
+→ Input adapter (txt/epub/etc.)
+→ Chapter manifest (canonical contract)
+→ Normalize chapter text into run workdir
 → Paraphrase chapters (chunked, resumable, local LLM)
 → Optional consistency / validation pass
-→ Rebuild EPUB (single file or per-volume)
+→ Build EPUB output
 
 ## 2. Core Constraints & Design Decisions
 
 ### LLM / Compute
 - Primary target: local inference
 - Initial runtime: Ollama
-- Architecture must allow backend swapping later:
+- Architecture should allow backend swapping later:
   - llama.cpp (GGUF)
   - MLX (Apple Silicon)
-  - transformers (if needed later)
+  - transformers (if needed)
 - No paid APIs
 - No fine-tuning planned initially (prompt-only)
 
+### Input-Agnostic Contract
+All ingest methods must produce the same chapter manifest and normalized chapter files for downstream stages.
+
+Planned supported sources:
+- Folder of single-chapter `.txt` files (current MVP)
+- Single `.txt` containing multiple chapters
+- Single-chapter EPUB
+- Multi-chapter EPUB requiring split
+
 ### Scale
-- Initial corpus is large (thousands of chapters)
-- Input EPUB can contain large XHTML files (hundreds of chapters per file)
-- Chapter splitting is required
-- Processing is batch-oriented
-- Long-running jobs are acceptable
-- Resume / checkpointing is mandatory
+- Initial production target is a large corpus (thousands of chapters)
+- Input EPUB may contain very large XHTML files
+- Batch processing and resume/checkpointing are mandatory
 
 ### Quality Goals
 - Preserve meaning and narrative continuity
@@ -47,32 +54,26 @@ This project aims to paraphrase full-length webnovels from EPUB input into clean
 - Character voice consistency is a bonus
 - Terminology consistency is important
 
-## 3. Input / Output Format
+## 3. Input / Output Staging in Repo
 
-### Input
-- EPUB
-- Chapters may not be stored one-per-file
-- Chapter boundaries detected via headings or text markers
-
-### Output
-- EPUB
-- Built entirely from paraphrased chapter XHTML files
-- One combined EPUB or per-volume EPUBs (optional)
+Local staging folders (contents gitignored):
+- `input/txt_chapters/` for chapter `.txt` files
+- `input/assets/` for optional cover PNG and related assets
+- `output/` for generated EPUB and run exports
 
 ## 4. Workdir-Based Architecture
 
 All processing happens inside a run-specific work directory.
-The final EPUB is rebuilt from scratch from processed artifacts.
+Final EPUB is rebuilt from processed artifacts.
 
-runs/<run_id>/work/
-- extracted/
-- chapters_raw/
-- chapters_paraphrased/
-- state/
-- chapter_index.json
-- volumes.json
-- reports/
-- logs/
+`runs/<run_id>/work/`
+- `extracted/`
+- `chapters_raw/`
+- `chapters_paraphrased/`
+- `state/`
+- `chapter_manifest.json`
+- `reports/`
+- `logs/`
 
 ## 5. Persistent State Concepts
 
@@ -93,42 +94,45 @@ Term → preferred rendering for terminology consistency.
   - style guidance
   - compact story bible
   - chapter summary so far
-  - last 1–2 rewritten paragraphs
-- Output must remain valid XHTML
+  - recent rewritten context
+- Output must remain valid XHTML-compatible text for EPUB assembly
 
-## 7. Development Roadmap
+## 7. Development Roadmap (Revised)
 
-Each feature corresponds to a separate branch merged into dev.
+Each feature corresponds to a branch merged into `dev`.
 
-### Feature 0: project-skeleton
-Repository scaffolding, CLI skeleton, logging, config.
+### Feature 0: project-skeleton (done)
+Repository scaffolding, CLI skeleton, logging, config, lint/test/CI baseline.
 
-### Feature 1: epub-inspection
-Inspect EPUB metadata, spine, and XHTML layout.
+### Feature 1: txt-singles-ingest-manifest (current)
+Ingest folder of single-chapter `.txt` files and emit canonical chapter manifest.
 
-### Feature 2: chapter-splitter
-Split large XHTML files into one file per chapter.
+### Feature 2: state-store-mvp
+Persistent run progress, checkpoint/resume primitives.
 
-### Feature 3: volume-detection
-Assign chapters to volumes if detectable.
-
-### Feature 4: state-store
-Persistent progress, story bible, summaries.
-
-### Feature 5: paraphrase-mvp-single-chapter
+### Feature 3: paraphrase-mvp-single-chapter
 Paraphrase one chapter end-to-end with Ollama.
 
-### Feature 6: paraphrase-batch-runner
-Batch processing with resume and retries.
+### Feature 4: paraphrase-batch-runner
+Batch processing over chapter manifest with retries and resume.
 
-### Feature 7: consistency-pass
-Detect and fix terminology and continuity drift.
+### Feature 5: epub-builder-mvp
+Build EPUB from paraphrased chapters, optional cover PNG.
 
-### Feature 8: epub-builder
-Rebuild final EPUB(s) from paraphrased chapters.
+### Feature 6: txt-multichapter-ingest
+Support one `.txt` file containing multiple chapters.
 
-### Feature 9: evaluation-and-regression
-Golden chapters, diffs, and regression checks.
+### Feature 7: epub-ingest-inspect-split
+Ingest EPUB, inspect structure, and split chapters into canonical manifest form.
+
+### Feature 8: volume-detection
+Assign chapters to volumes when detectable.
+
+### Feature 9: consistency-pass
+Detect and fix terminology / continuity drift.
+
+### Feature 10: evaluation-and-regression
+Golden chapter checks, diff-based regression guardrails.
 
 ## 8. Non-Goals
 
@@ -140,6 +144,7 @@ Golden chapters, diffs, and regression checks.
 
 ## 9. Guiding Principles
 
+- One internal pipeline contract, multiple ingest adapters
 - Deterministic structure before LLM calls
 - Clear separation of concerns
 - Everything resumable and inspectable
@@ -147,9 +152,9 @@ Golden chapters, diffs, and regression checks.
 
 ## 10. Current Status
 
-- Input: EPUB with large XHTML files
-- Output: EPUB
-- LLM runtime: Ollama
-- Workflow: feature branches → dev
+- Runtime: local Ollama
+- Immediate target: 6 `.txt` chapter MVP run
+- Output target: valid EPUB from paraphrased chapters
+- Workflow: feature branches → `dev`
 
 This file is the authoritative public project context.
